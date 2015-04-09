@@ -1,36 +1,39 @@
-// var url = 'https://api.github.com/users/flatcap/gists';
-var url = 'flatcap.json';
+var user = 'flatcap';
 
 function repo_sort (a, b)
 {
-	return (a > b);
-	return 0;
-	// if (a.name_short > b.name_short) {
-	// 	return 1;
-	// } else if (a.name_short < b.name_short) {
-	// 	return -1;
-	// } else {
-	// 	return 0;
-	// }
+	return (a.created_at > b.created_at);
 }
 
 $(document).ready (function() {
-	var list = $ ('#list');
+	var table = $('#table');
 
 	$.ajax ({
 		dataType: "json",
-		url: url,
+		url: 'https://api.github.com/users/'+user+'/gists',
+
 		success: function (gists) {
-			var files = [];
+			var repos = [];
 			$.each (gists, function (index, repo) {
-				$.each (repo.files, function (filename, obj) {
-					files.push (filename);
+				repos.push (repo);
+			});
+			repos.sort (repo_sort);
+
+			$.each (repos, function (index, repo) {
+				var files = [];
+				$.each (repo.files, function (name, obj) {
+					files.push (name);
 				});
 
-			});
-			files.sort (repo_sort);
-			$.each (files, function (index, file) {
-				list.append ('<li>' + file + '</li>');
+				var desc = repo.description.replace (/https*:\/\/.+/g, "<a href=\"$&\">$&</a>"); 
+
+				var row = '';
+				row += '<td>' + repo.created_at.substr(0,10) + '</td>';
+				row += '<td><a href="' + repo.html_url + '">' + repo.id + '</a></td>';
+				row += '<td>' + files.join(', ') + '</td>';
+				row += '<td>' + desc + '</td>';
+
+				table.append ('<tr>'+row+'</tr>');
 			});
 		},
 		error: function (jq, jqStatus, jqError) {
